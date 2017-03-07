@@ -14,18 +14,32 @@ class ViewController: UIViewController, UICollectionViewDataSource {
         let cellNib = UINib(nibName: "Cell", bundle: nil)
         let headerNib = UINib(nibName: "Header", bundle: nil)
         let footerNib = UINib(nibName: "Footer", bundle: nil)
-        let decorationNib = UINib(nibName: "Decoration", bundle: nil)
+        let decorationNib = UINib(nibName: "Spacing", bundle: nil)
         collectionView.register(cellNib, forCellWithReuseIdentifier: "Cell")
         collectionView.register(headerNib, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: "Header")
         collectionView.register(footerNib, forSupplementaryViewOfKind: UICollectionElementKindSectionFooter, withReuseIdentifier: "Footer")
-        collectionView.collectionViewLayout.register(decorationNib, forDecorationViewOfKind: "Decoration")
+        collectionView.collectionViewLayout.register(decorationNib, forDecorationViewOfKind: "Spacing")
+    }
 
 
+    var spacingFlowLayout: SectionSpacingFlowLayout {
+        return collectionView.collectionViewLayout as! SectionSpacingFlowLayout
+    }
+
+
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        coordinator.animate(alongsideTransition: { (_) in
+            self.collectionView.collectionViewLayout.invalidateLayout()
+        }) { (_) in
+
+        }
     }
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         setupDefaults(collectionView.collectionViewLayout as! UICollectionViewFlowLayout)
+        collectionView.reloadData()
     }
 
     func setupDefaults(_ collectionViewLayout: UICollectionViewFlowLayout) {
@@ -48,8 +62,8 @@ class ViewController: UIViewController, UICollectionViewDataSource {
         collectionView.reloadData()
     }
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
+    @IBAction func didTap(_ sender: Any) {
+        spacingFlowLayout.spacingHeight = spacingFlowLayout.spacingHeight == 20 ? 100 : 20
     }
 
     // MARK: - DataSource
@@ -90,26 +104,45 @@ class ViewController: UIViewController, UICollectionViewDataSource {
 
 extension ViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return .init(width: collectionView.frame.size.width, height: 50)
+        return CGSize(width: collectionView.frame.width/2.0 - 5, height: 50)
     }
 
-//    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-//
-//    }
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+        switch section {
+        case 0: return .zero
+        case 1: return UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+        case 2: return .zero
+
+        default:
+            return .zero
+        }
+    }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return 2
+        return 1.0 / UIScreen.main.scale
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-        return 5
+        return 20
     }
 
-//    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-//
-//    }
-//
-//    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForFooterInSection section: Int) -> CGSize {
-//
-//    }
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
+        switch section {
+        case 0: return CGSize(width: collectionView.frame.width, height: 10)
+        case 1: return CGSize(width: collectionView.frame.width, height: 20)
+        case 2: return CGSize(width: collectionView.frame.width, height: 30)
+        case 3: return CGSize(width: collectionView.frame.width, height: 40)
+        default: return CGSize(width: collectionView.frame.width, height: 10)
+        }
+    }
+
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForFooterInSection section: Int) -> CGSize {
+        switch section {
+        case 0: return CGSize(width: collectionView.frame.width, height: 10)
+        case 1: return CGSize(width: collectionView.frame.width, height: 20)
+        case 2: return CGSize(width: collectionView.frame.width, height: 30)
+        case 3: return CGSize(width: collectionView.frame.width, height: 40)
+        default: return CGSize(width: collectionView.frame.width, height: 10)
+        }
+    }
 }

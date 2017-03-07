@@ -1,21 +1,19 @@
 import Foundation
 import UIKit
 
-class FlowLayout: UICollectionViewFlowLayout {
+class SectionSpacingFlowLayout: UICollectionViewFlowLayout {
     private var sectionMaxYs = [CGFloat]()
-    private let spacingHeight: CGFloat
-    private let decorationViewKind: String
 
-    init(decorationViewKind: String = "Decoration", spacingHeight: CGFloat = 20) {
-        self.decorationViewKind = decorationViewKind
-        self.spacingHeight = spacingHeight
-        super.init()
+    var decorationViewKind: String = "Spacing" {
+        didSet(newSpacingHeight) {
+            invalidateLayout()
+        }
     }
 
-    required init?(coder aDecoder: NSCoder) {
-        self.decorationViewKind = "Decoration"
-        self.spacingHeight = 20
-        super.init(coder: aDecoder)
+    var spacingHeight: CGFloat = 50 {
+        didSet(newSpacingHeight) {
+            invalidateLayout()
+        }
     }
 
     override func prepare() {
@@ -23,15 +21,14 @@ class FlowLayout: UICollectionViewFlowLayout {
         guard let collectionView = collectionView else { return }
 
         sectionMaxYs.removeAll()
-        var y = CGFloat(0)
+        var y: CGFloat = 0
 
         for section in 0...collectionView.numberOfSections-1 {
             let insets = sectionInset(for: section)
             y += referenceSizeForHeader(in: section).height
             y += insets.top
 
-            let itemsCount = collectionView.numberOfItems(inSection: section)
-            for row in 0...itemsCount-1 {
+            for row in 0...numberOfLine(in: section)-1 {
                 y += sizeForItem(at: IndexPath(row: row, section: section)).height
                 y += minimumLineSpacing(for: section)
             }
@@ -47,17 +44,28 @@ class FlowLayout: UICollectionViewFlowLayout {
             let collectionView = collectionView,
             let superLayoutAttributes = super.layoutAttributesForElements(in: rect) else { return nil }
 
-        var layoutAttributes = superLayoutAttributes
-        for layoutAttribute in layoutAttributes where layoutAttribute.representedElementCategory == .supplementaryView || layoutAttribute.representedElementCategory == .cell {
+        var supplementaryAndCellAtrributes = superLayoutAttributes.filter {
+            return $0.representedElementCategory == .supplementaryView || $0.representedElementCategory == .cell
+        }
+
+        for layoutAttribute in supplementaryAndCellAtrributes {
             let offsetY = CGFloat(1 + layoutAttribute.indexPath.section) * spacingHeight
             layoutAttribute.frame = layoutAttribute.frame.offsetBy(dx: 0, dy: offsetY)
         }
 
         for section in 0...collectionView.numberOfSections-1 {
-            layoutAttributes.append(decoration(section: section))
+            supplementaryAndCellAtrributes.append(decoration(section: section))
         }
 
-        return layoutAttributes
+        return Array(supplementaryAndCellAtrributes)
+    }
+
+    func register(viewClass: Swift.AnyClass?) {
+        register(viewClass, forDecorationViewOfKind: decorationViewKind)
+    }
+
+    func register(nib: UINib?) {
+        register(nib, forDecorationViewOfKind: decorationViewKind)
     }
 
     override var collectionViewContentSize: CGSize {
@@ -66,75 +74,35 @@ class FlowLayout: UICollectionViewFlowLayout {
             let lastSectionMaxY = sectionMaxYs.last else {
                 return .zero
         }
-        return CGSize(width: itemWidth,
+        return CGSize(width: collectionView.frame.size.width,
                       height: lastSectionMaxY + CGFloat(collectionView.numberOfSections + 1) * spacingHeight)
     }
 
-//    func itemCountPerRow() {
-//        
-//        int itemsAcross = floorf((availableWidth + self.minimumInteritemSpacing) / (self.itemSize.width + self.minimumInteritemSpacing));
-//    }
+    override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
+        return true
+    }
 
-    private var itemWidth: CGFloat {
-        guard let collectionView = collectionView else { return 0 }
-        return collectionView.frame.width - sectionInset.left - sectionInset.right - collectionView.contentInset.left - collectionView.contentInset.right
+    private func numberOfLine(in section: Int) -> Int {
+        let itemsCount = CGFloat(collectionView!.numberOfItems(inSection: section))
+        let width: CGFloat = availableWidth(in: section)
+        let itemWidth = sizeForItem(at: IndexPath(row: 0, section: section)).width
+        let minInteritemSpacing = minimumInteritemSpacing(for: section)
+        let itemsAcross = ((width + minInteritemSpacing) / (itemWidth + minInteritemSpacing))
+        let result = itemsCount / itemsAcross.rounded(.down)
+        return Int(result.rounded(.up))
+    }
+
+    private func availableWidth(in section: Int) -> CGFloat {
+        guard let cv = collectionView else { return 0 }
+        let inset = sectionInset(for: section)
+        return cv.frame.size.width - cv.contentInset.left - cv.contentInset.right - inset.left - inset.right
     }
 
     private func decoration(section: Int) -> UICollectionViewLayoutAttributes {
-        let attr = UICollectionViewLayoutAttributes(forDecorationViewOfKind: "Decoration", with: IndexPath(row: 0, section: section))
+        let attr = UICollectionViewLayoutAttributes(forDecorationViewOfKind: decorationViewKind, with: IndexPath(row: 0, section: section))
 
         let sectionMaxY = section == 0 ? 0 : (sectionMaxYs[section-1] + CGFloat(section) * spacingHeight)
-        attr.frame = CGRect(x: 0, y: sectionMaxY, width: itemWidth, height: spacingHeight)
+        attr.frame = CGRect(x: 0, y: sectionMaxY, width: collectionView!.frame.size.width, height: spacingHeight)
         return attr
-    }
-
-    private func minimumLineSpacing(for section: Int) -> CGFloat {
-        guard
-            let collectionView = collectionView,
-            let flowDelegate = collectionView.delegate as? UICollectionViewDelegateFlowLayout,
-            let minimumLineSpacingForSection = flowDelegate.collectionView?(collectionView, layout: self, minimumLineSpacingForSectionAt: section) else {
-                return minimumLineSpacing
-        }
-        return minimumLineSpacingForSection
-    }
-
-    private func sectionInset(for section: Int) -> UIEdgeInsets {
-        guard
-            let collectionView = collectionView,
-            let flowDelegate = collectionView.delegate as? UICollectionViewDelegateFlowLayout,
-            let insetForSection = flowDelegate.collectionView?(collectionView, layout: self, insetForSectionAt: section) else {
-                return sectionInset
-        }
-        return insetForSection
-    }
-
-    private func referenceSizeForHeader(in section: Int) -> CGSize {
-        guard
-            let collectionView = collectionView,
-            let flowDelegate = collectionView.delegate as? UICollectionViewDelegateFlowLayout,
-            let headerSize = flowDelegate.collectionView?(collectionView, layout: self, referenceSizeForHeaderInSection: section) else {
-                return headerReferenceSize
-        }
-        return headerSize
-    }
-
-    private func referenceSizeForFooter(in section: Int) -> CGSize {
-        guard
-            let collectionView = collectionView,
-            let flowDelegate = collectionView.delegate as? UICollectionViewDelegateFlowLayout,
-            let footerSize = flowDelegate.collectionView?(collectionView, layout: self, referenceSizeForFooterInSection: section) else {
-                return footerReferenceSize
-        }
-        return footerSize
-    }
-
-    private func sizeForItem(at indexPath: IndexPath) -> CGSize {
-        guard
-            let collectionView = collectionView,
-            let flowDelegate = collectionView.delegate as? UICollectionViewDelegateFlowLayout,
-            let size = flowDelegate.collectionView?(collectionView, layout: self, sizeForItemAt: indexPath) else {
-                return itemSize
-        }
-        return size
     }
 }
