@@ -18,7 +18,7 @@ class Footer: UICollectionReusableView {
 
 }
 
-class Decoration: UICollectionReusableView {
+class Spacing: UICollectionReusableView {
     override func awakeFromNib() {
         super.awakeFromNib()
     }
