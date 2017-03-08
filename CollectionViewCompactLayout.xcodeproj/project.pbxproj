@@ -16,7 +16,7 @@
 		68A29C2B1E68550400E76CD3 /* Cell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 68A29C291E68550400E76CD3 /* Cell.xib */; };
 		68A29C2E1E6855F300E76CD3 /* ReusableViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68A29C2C1E6855F300E76CD3 /* ReusableViews.swift */; };
 		68A29C2F1E6855F300E76CD3 /* Header.xib in Resources */ = {isa = PBXBuildFile; fileRef = 68A29C2D1E6855F300E76CD3 /* Header.xib */; };
-		940B35D61E698383004786C5 /* FlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940B35D51E698383004786C5 /* FlowLayout.swift */; };
+		940B35D61E698383004786C5 /* SectionSpacingFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940B35D51E698383004786C5 /* SectionSpacingFlowLayout.swift */; };
 		940B35D71E698610004786C5 /* Footer.xib in Resources */ = {isa = PBXBuildFile; fileRef = 940B35D31E698231004786C5 /* Footer.xib */; };
 		940B35D91E6986EF004786C5 /* Spacing.xib in Resources */ = {isa = PBXBuildFile; fileRef = 940B35D81E6986EF004786C5 /* Spacing.xib */; };
 		940F41B61E6F2C6F0098725D /* UICollectionViewFlowLayout+Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940F41B51E6F2C6F0098725D /* UICollectionViewFlowLayout+Helpers.swift */; };
@@ -35,7 +35,7 @@
 		68A29C2C1E6855F300E76CD3 /* ReusableViews.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReusableViews.swift; sourceTree = "<group>"; };
 		68A29C2D1E6855F300E76CD3 /* Header.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = Header.xib; sourceTree = "<group>"; };
 		940B35D31E698231004786C5 /* Footer.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = Footer.xib; sourceTree = "<group>"; };
-		940B35D51E698383004786C5 /* FlowLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FlowLayout.swift; sourceTree = "<group>"; };
+		940B35D51E698383004786C5 /* SectionSpacingFlowLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SectionSpacingFlowLayout.swift; sourceTree = "<group>"; };
 		940B35D81E6986EF004786C5 /* Spacing.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = Spacing.xib; sourceTree = "<group>"; };
 		940F41B51E6F2C6F0098725D /* UICollectionViewFlowLayout+Helpers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UICollectionViewFlowLayout+Helpers.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -72,7 +72,7 @@
 			children = (
 				68A29C161E6851B100E76CD3 /* AppDelegate.swift */,
 				68A29C181E6851B100E76CD3 /* ViewController.swift */,
-				940B35D51E698383004786C5 /* FlowLayout.swift */,
+				940B35D51E698383004786C5 /* SectionSpacingFlowLayout.swift */,
 				940F41B51E6F2C6F0098725D /* UICollectionViewFlowLayout+Helpers.swift */,
 				68A29C281E68550400E76CD3 /* Cell.swift */,
 				68A29C2C1E6855F300E76CD3 /* ReusableViews.swift */,
@@ -120,6 +120,7 @@
 				TargetAttributes = {
 					68A29C121E6851B100E76CD3 = {
 						CreatedOnToolsVersion = 8.2.1;
+						DevelopmentTeam = 9MUPTB4LAF;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -167,7 +168,7 @@
 				940F41B61E6F2C6F0098725D /* UICollectionViewFlowLayout+Helpers.swift in Sources */,
 				68A29C2E1E6855F300E76CD3 /* ReusableViews.swift in Sources */,
 				68A29C191E6851B100E76CD3 /* ViewController.swift in Sources */,
-				940B35D61E698383004786C5 /* FlowLayout.swift in Sources */,
+				940B35D61E698383004786C5 /* SectionSpacingFlowLayout.swift in Sources */,
 				68A29C171E6851B100E76CD3 /* AppDelegate.swift in Sources */,
 				68A29C2A1E68550400E76CD3 /* Cell.swift in Sources */,
 			);
@@ -292,6 +293,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = 9MUPTB4LAF;
 				INFOPLIST_FILE = CollectionViewCompactLayout/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = agc.CollectionViewCompactLayout;
@@ -304,6 +306,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = 9MUPTB4LAF;
 				INFOPLIST_FILE = CollectionViewCompactLayout/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = agc.CollectionViewCompactLayout;

@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 class SectionSpacingFlowLayout: UICollectionViewFlowLayout {
-    private var sectionMaxYs = [CGFloat]()
+    fileprivate var sectionMaxYs = [CGFloat]()
 
     var decorationViewKind: String = "Spacing" {
         didSet(newSpacingHeight) {
@@ -16,9 +16,20 @@ class SectionSpacingFlowLayout: UICollectionViewFlowLayout {
         }
     }
 
+    func register(viewClass: Swift.AnyClass?) {
+        register(viewClass, forDecorationViewOfKind: decorationViewKind)
+    }
+
+    func register(nib: UINib?) {
+        register(nib, forDecorationViewOfKind: decorationViewKind)
+    }
+
+    // MARK: UICollectionViewFlowLayout
+
     override func prepare() {
         super.prepare()
         guard let collectionView = collectionView else { return }
+        scrollDirection = .vertical
 
         sectionMaxYs.removeAll()
         var y: CGFloat = 0
@@ -40,32 +51,21 @@ class SectionSpacingFlowLayout: UICollectionViewFlowLayout {
     }
 
     override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
-        guard
-            let collectionView = collectionView,
-            let superLayoutAttributes = super.layoutAttributesForElements(in: rect) else { return nil }
+        guard let superLayoutAttributes = super.layoutAttributesForElements(in: fixBugRect(rect)) else { return nil }
 
-        var supplementaryAndCellAtrributes = superLayoutAttributes.filter {
-            return $0.representedElementCategory == .supplementaryView || $0.representedElementCategory == .cell
-        }
+        var supplementaryAndCellAtrributes = updatedSupplementaryAndCellAtrributes(from: superLayoutAttributes)
 
-        for layoutAttribute in supplementaryAndCellAtrributes {
-            let offsetY = CGFloat(1 + layoutAttribute.indexPath.section) * spacingHeight
-            layoutAttribute.frame = layoutAttribute.frame.offsetBy(dx: 0, dy: offsetY)
-        }
-
-        for section in 0...collectionView.numberOfSections-1 {
+        let indexes = orderedSectionIndexes(from: superLayoutAttributes)
+        for section in indexes {
             supplementaryAndCellAtrributes.append(decoration(section: section))
         }
 
-        return Array(supplementaryAndCellAtrributes)
+        return supplementaryAndCellAtrributes
     }
 
-    func register(viewClass: Swift.AnyClass?) {
-        register(viewClass, forDecorationViewOfKind: decorationViewKind)
-    }
-
-    func register(nib: UINib?) {
-        register(nib, forDecorationViewOfKind: decorationViewKind)
+    override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+        guard let layoutAttribute = super.layoutAttributesForItem(at: indexPath) else { return nil }
+        return updatedSupplementaryAndCellAtrributes(from: [layoutAttribute]).first
     }
 
     override var collectionViewContentSize: CGSize {
@@ -81,8 +81,31 @@ class SectionSpacingFlowLayout: UICollectionViewFlowLayout {
     override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
         return true
     }
+}
 
-    private func numberOfLine(in section: Int) -> Int {
+// MARK: Private
+
+extension SectionSpacingFlowLayout {
+    fileprivate func fixBugRect(_ originalRect: CGRect) ->  CGRect {
+        guard let collectionView = collectionView else { return originalRect }
+        return originalRect.insetBy(dx: 0, dy: -collectionView.bounds.size.height)
+    }
+
+    fileprivate func updatedSupplementaryAndCellAtrributes(from layoutAttributes: [UICollectionViewLayoutAttributes]) -> [UICollectionViewLayoutAttributes] {
+        var result = [UICollectionViewLayoutAttributes]()
+        let supplementaryAndCellAtrributes = layoutAttributes.filter {
+            return $0.representedElementCategory == .supplementaryView || $0.representedElementCategory == .cell
+        }
+
+        for layoutAttribute in supplementaryAndCellAtrributes {
+            let offsetY = CGFloat(1 + layoutAttribute.indexPath.section) * spacingHeight
+            layoutAttribute.frame = layoutAttribute.frame.offsetBy(dx: 0, dy: offsetY)
+            result.append(layoutAttribute)
+        }
+        return result
+    }
+
+    fileprivate func numberOfLine(in section: Int) -> Int {
         let itemsCount = CGFloat(collectionView!.numberOfItems(inSection: section))
         let width: CGFloat = availableWidth(in: section)
         let itemWidth = sizeForItem(at: IndexPath(row: 0, section: section)).width
@@ -92,13 +115,18 @@ class SectionSpacingFlowLayout: UICollectionViewFlowLayout {
         return Int(result.rounded(.up))
     }
 
-    private func availableWidth(in section: Int) -> CGFloat {
+    fileprivate func orderedSectionIndexes(from layoutAttributes: [UICollectionViewLayoutAttributes]) -> [Int] {
+        let indexes = layoutAttributes.map { return $0.indexPath.section }
+        return Set(indexes).sorted()
+    }
+
+    fileprivate func availableWidth(in section: Int) -> CGFloat {
         guard let cv = collectionView else { return 0 }
         let inset = sectionInset(for: section)
         return cv.frame.size.width - cv.contentInset.left - cv.contentInset.right - inset.left - inset.right
     }
 
-    private func decoration(section: Int) -> UICollectionViewLayoutAttributes {
+    fileprivate func decoration(section: Int) -> UICollectionViewLayoutAttributes {
         let attr = UICollectionViewLayoutAttributes(forDecorationViewOfKind: decorationViewKind, with: IndexPath(row: 0, section: section))
 
         let sectionMaxY = section == 0 ? 0 : (sectionMaxYs[section-1] + CGFloat(section) * spacingHeight)
