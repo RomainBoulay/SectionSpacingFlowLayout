@@ -20,6 +20,7 @@
 		940B35D71E698610004786C5 /* Footer.xib in Resources */ = {isa = PBXBuildFile; fileRef = 940B35D31E698231004786C5 /* Footer.xib */; };
 		940B35D91E6986EF004786C5 /* Spacing.xib in Resources */ = {isa = PBXBuildFile; fileRef = 940B35D81E6986EF004786C5 /* Spacing.xib */; };
 		940F41B61E6F2C6F0098725D /* UICollectionViewFlowLayout+Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940F41B51E6F2C6F0098725D /* UICollectionViewFlowLayout+Helpers.swift */; };
+		94D61F2D1E71A48200C69AAE /* SectionPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D61F2C1E71A48200C69AAE /* SectionPosition.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,6 +39,7 @@
 		940B35D51E698383004786C5 /* SectionSpacingFlowLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SectionSpacingFlowLayout.swift; sourceTree = "<group>"; };
 		940B35D81E6986EF004786C5 /* Spacing.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = Spacing.xib; sourceTree = "<group>"; };
 		940F41B51E6F2C6F0098725D /* UICollectionViewFlowLayout+Helpers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UICollectionViewFlowLayout+Helpers.swift"; sourceTree = "<group>"; };
+		94D61F2C1E71A48200C69AAE /* SectionPosition.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SectionPosition.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +75,7 @@
 				68A29C161E6851B100E76CD3 /* AppDelegate.swift */,
 				68A29C181E6851B100E76CD3 /* ViewController.swift */,
 				940B35D51E698383004786C5 /* SectionSpacingFlowLayout.swift */,
+				94D61F2C1E71A48200C69AAE /* SectionPosition.swift */,
 				940F41B51E6F2C6F0098725D /* UICollectionViewFlowLayout+Helpers.swift */,
 				68A29C281E68550400E76CD3 /* Cell.swift */,
 				68A29C2C1E6855F300E76CD3 /* ReusableViews.swift */,
@@ -171,6 +174,7 @@
 				940B35D61E698383004786C5 /* SectionSpacingFlowLayout.swift in Sources */,
 				68A29C171E6851B100E76CD3 /* AppDelegate.swift in Sources */,
 				68A29C2A1E68550400E76CD3 /* Cell.swift in Sources */,
+				94D61F2D1E71A48200C69AAE /* SectionPosition.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

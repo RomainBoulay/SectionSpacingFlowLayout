@@ -2,25 +2,14 @@ import Foundation
 import UIKit
 
 open class SectionSpacingFlowLayout: UICollectionViewFlowLayout {
-    fileprivate var sectionMinYs = [CGFloat]()
-    fileprivate var sectionMaxYs = [CGFloat]()
+    fileprivate var sectionPositions = [SectionAttribute]()
 
     public var decorationViewKind: String = "SectionSpacingFlowLayout" {
-        didSet {
-            invalidateLayout()
-        }
+        didSet { invalidateLayout() }
     }
 
-    public var spacingHeight: CGFloat = 12 {
-        didSet {
-            invalidateLayout()
-        }
-    }
-
-    public var collectionViewBottomInset: CGFloat = 12 {
-        didSet {
-            invalidateLayout()
-        }
+    public var spacingHeight: CGFloat = 50 {
+        didSet { invalidateLayout() }
     }
 
     public func register(viewClass: AnyClass?) {
@@ -40,38 +29,42 @@ open class SectionSpacingFlowLayout: UICollectionViewFlowLayout {
             collectionView.numberOfSections > 0,
             scrollDirection == .vertical else { return }
 
-        sectionMinYs.removeAll()
-        for section in 0...collectionView.numberOfSections-1 where collectionView.numberOfItems(inSection: section) > 0 {
-            if let layoutAttributesForFirstItem = super.layoutAttributesForItem(at: IndexPath(row: 0, section: section)) {
-                sectionMinYs.append(layoutAttributesForFirstItem.frame.minY)
-            }
+        sectionPositions.removeAll()
+        for section in 0...collectionView.numberOfSections-1 {
+            let itemsCount = collectionView.numberOfItems(inSection: section)
+            let previousAggregatedVerticalOffset = sectionPositions.last?.aggregatedVerticalOffset ?? 0
 
             if
-                let lastIndexPath = lastIndexPath(in: section),
+                itemsCount > 0,
+                let layoutAttributesForFirstItem = super.layoutAttributesForItem(at: IndexPath(row: 0, section: section)),
+                let lastIndexPath = lastIndexPath(in: section, collectionView: collectionView),
                 let layoutAttributesForLastItem = super.layoutAttributesForItem(at: lastIndexPath) {
-                let maxY = layoutAttributesForLastItem.frame.maxY
-                sectionMaxYs.append(sectionBottomY(section: section, lastItemMaxY: maxY))
+
+                let sectionPosition = buildSectionPosition(firstLayoutAttribute: layoutAttributesForFirstItem,
+                                                           lastLayoutAttribute: layoutAttributesForLastItem,
+                                                           section: section,
+                                                           itemsCount: itemsCount,
+                                                           previousAggregatedVerticalOffset: previousAggregatedVerticalOffset)
+                sectionPositions.append(sectionPosition)
+            } else {
+                sectionPositions.append(SectionAttribute.emptySectionPosition(previousAggregatedVerticalOffset: previousAggregatedVerticalOffset))
             }
         }
-    }
-
-    private func lastIndexPath(in section: Int) -> IndexPath? {
-        guard let collectionView = collectionView else { return nil }
-        let numberOfItems = collectionView.numberOfItems(inSection: section)
-        return IndexPath(row: numberOfItems - 1, section: section)
     }
 
     open override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
         guard let superLayoutAttributes = super.layoutAttributesForElements(in: workaroundCellFlickering(rect)) else { return nil }
 
-        var supplementaryAndCellAtrributes = updatedSupplementaryAndCellAtrributes(from: superLayoutAttributes)
+        var returnedLayoutAttributes = updatedSupplementaryAndCellAtrributes(from: superLayoutAttributes)
+        let sectionIndexes = orderedSectionIndexes(from: returnedLayoutAttributes)
 
-        let indexes = orderedSectionIndexes(from: superLayoutAttributes)
-        for section in indexes {
-            supplementaryAndCellAtrributes.append(decoration(section: section))
+        for section in sectionIndexes {
+            if let decorationViewLayoutAttribute = decorationLayoutAttribute(section: section) {
+                returnedLayoutAttributes.append(decorationViewLayoutAttribute)
+            }
         }
 
-        return supplementaryAndCellAtrributes
+        return returnedLayoutAttributes
     }
 
     open override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
@@ -82,11 +75,12 @@ open class SectionSpacingFlowLayout: UICollectionViewFlowLayout {
     open override var collectionViewContentSize: CGSize {
         guard
             let collectionView = collectionView,
-            let lastSectionMaxY = sectionMaxYs.last else {
+            let lastSectionPosition = sectionPositions.last else {
                 return .zero
         }
+        let totalContentHeight = lastSectionPosition.newMaxY + spacingHeight
         return CGSize(width: collectionView.frame.size.width,
-                      height: lastSectionMaxY + bottomExtraSpace)
+                      height: totalContentHeight)
     }
 
     open override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
@@ -98,6 +92,27 @@ open class SectionSpacingFlowLayout: UICollectionViewFlowLayout {
 
 extension SectionSpacingFlowLayout {
 
+    fileprivate func buildSectionPosition(firstLayoutAttribute: UICollectionViewLayoutAttributes,
+                                          lastLayoutAttribute: UICollectionViewLayoutAttributes,
+                                          section: Int,
+                                          itemsCount: Int,
+                                          previousAggregatedVerticalOffset: CGFloat) -> SectionAttribute {
+        let minY = sectionTopY(section: section, firstItemMinY: firstLayoutAttribute.frame.minY)
+        let maxY = sectionBottomY(section: section, lastItemMaxY: lastLayoutAttribute.frame.maxY)
+        return SectionAttribute(
+            minY: minY,
+            maxY: maxY,
+            itemsCount: itemsCount,
+            spacingHeight: spacingHeight,
+            previousAggregatedVerticalOffset: previousAggregatedVerticalOffset
+        )
+    }
+
+    fileprivate func lastIndexPath(in section: Int, collectionView: UICollectionView) -> IndexPath? {
+        let numberOfItems = collectionView.numberOfItems(inSection: section)
+        return numberOfItems > 0 ? IndexPath(row: numberOfItems - 1, section: section) : nil
+    }
+
     fileprivate func sectionBottomY(section: Int, lastItemMaxY: CGFloat) -> CGFloat {
         var y = lastItemMaxY
         y += minimumLineSpacing(for: section)
@@ -106,9 +121,11 @@ extension SectionSpacingFlowLayout {
         return y
     }
 
-    fileprivate var bottomExtraSpace: CGFloat {
-        guard let collectionView = collectionView else { return collectionViewBottomInset }
-        return CGFloat(collectionView.numberOfSections) * spacingHeight + collectionViewBottomInset
+    fileprivate func sectionTopY(section: Int, firstItemMinY: CGFloat) -> CGFloat {
+        var y = firstItemMinY
+        y -= referenceSizeForHeader(in: section).height
+        y -= sectionInset(for: section).top
+        return y
     }
 
     fileprivate func workaroundCellFlickering(_ originalRect: CGRect) -> CGRect {
@@ -124,16 +141,30 @@ extension SectionSpacingFlowLayout {
         }
 
         for layoutAttribute in supplementaryAndCellAtrributes {
-            let offsetY = CGFloat(1 + layoutAttribute.indexPath.section) * spacingHeight
-            layoutAttribute.frame = layoutAttribute.frame.offsetBy(dx: 0, dy: offsetY)
-            result.append(layoutAttribute)
+            let section = layoutAttribute.indexPath.section
+            let supplementaryAndCellAtrribute = updatedSupplementaryAndCellAtrribute(section: section,
+                                                                                     originalLayoutAttribute: layoutAttribute)
+            result.append(supplementaryAndCellAtrribute)
         }
+
+        if let lastDecoration = lastDecorationLayoutAttribute() {
+            result.append(lastDecoration)
+        }
+
         return result
     }
 
+    fileprivate func updatedSupplementaryAndCellAtrribute(section: Int, originalLayoutAttribute: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
+        let returnedLayoutAttribute = originalLayoutAttribute
+        let verticalOffset = sectionPositions[section].aggregatedVerticalOffset
+        returnedLayoutAttribute.frame = returnedLayoutAttribute.frame.offsetBy(dx: 0, dy: verticalOffset)
+        returnedLayoutAttribute.isHidden = !sectionPositions[section].hasItems
+        return returnedLayoutAttribute
+    }
+
     fileprivate func numberOfLines(in section: Int) -> Int {
-        let itemsCount = CGFloat(collectionView!.numberOfItems(inSection: section))
-        let width: CGFloat = availableWidth(in: section)
+        let itemsCount = CGFloat(sectionPositions[section].itemsCount)
+        let width = availableWidth(in: section)
         let itemWidth = sizeForItem(at: IndexPath(row: 0, section: section)).width
         let minInteritemSpacing = minimumInteritemSpacing(for: section)
         let itemsAcross = ((width + minInteritemSpacing) / (itemWidth + minInteritemSpacing))
@@ -152,10 +183,21 @@ extension SectionSpacingFlowLayout {
         return cv.frame.size.width - cv.contentInset.left - cv.contentInset.right - inset.left - inset.right
     }
 
-    fileprivate func decoration(section: Int) -> UICollectionViewLayoutAttributes {
-        let attr = UICollectionViewLayoutAttributes(forDecorationViewOfKind: decorationViewKind, with: IndexPath(row: 0, section: section))
+    fileprivate func decorationLayoutAttribute(section: Int, row: Int = 0) -> UICollectionViewLayoutAttributes? {
+        let sectionPosition = sectionPositions[section]
+        guard sectionPosition.hasItems else { return nil }
 
-        let sectionMinY = sectionMinYs[section] + CGFloat(section) * spacingHeight
+        let attr = UICollectionViewLayoutAttributes(forDecorationViewOfKind: decorationViewKind, with: IndexPath(row: row, section: section))
+        let sectionMinY = sectionPosition.decorationViewMinY
+        attr.frame = CGRect(x: 0, y: sectionMinY, width: collectionView!.frame.size.width, height: spacingHeight)
+        return attr
+    }
+
+    fileprivate func lastDecorationLayoutAttribute() -> UICollectionViewLayoutAttributes? {
+        guard let sectionPosition = sectionPositions.last else { return nil }
+
+        let attr = UICollectionViewLayoutAttributes(forDecorationViewOfKind: decorationViewKind, with: IndexPath(row: 1, section: sectionPositions.count-1))
+        let sectionMinY = sectionPosition.newMaxY
         attr.frame = CGRect(x: 0, y: sectionMinY, width: collectionView!.frame.size.width, height: spacingHeight)
         return attr
     }
