@@ -1,57 +1,53 @@
 import Foundation
 import UIKit
 
-class SectionSpacingFlowLayout: UICollectionViewFlowLayout {
+open class SectionSpacingFlowLayout: UICollectionViewFlowLayout {
     fileprivate var sectionMaxYs = [CGFloat]()
 
-    var decorationViewKind: String = "Spacing" {
-        didSet(newSpacingHeight) {
+    public var decorationViewKind: String = "SectionSpacingFlowLayout" {
+        didSet {
             invalidateLayout()
         }
     }
 
-    var spacingHeight: CGFloat = 50 {
-        didSet(newSpacingHeight) {
+    public var spacingHeight: CGFloat = 12 {
+        didSet {
             invalidateLayout()
         }
     }
 
-    func register(viewClass: Swift.AnyClass?) {
+    public var collectionViewBottomInset: CGFloat = 12 {
+        didSet {
+            invalidateLayout()
+        }
+    }
+
+    public func register(viewClass: AnyClass?) {
         register(viewClass, forDecorationViewOfKind: decorationViewKind)
     }
 
-    func register(nib: UINib?) {
+    public func register(nib: UINib?) {
         register(nib, forDecorationViewOfKind: decorationViewKind)
     }
 
     // MARK: UICollectionViewFlowLayout
 
-    override func prepare() {
+    open override func prepare() {
         super.prepare()
-        guard let collectionView = collectionView else { return }
-        scrollDirection = .vertical
+        guard
+            let collectionView = collectionView,
+            collectionView.numberOfSections > 0,
+            scrollDirection == .vertical else { return }
 
         sectionMaxYs.removeAll()
-        var y: CGFloat = 0
-
         for section in 0...collectionView.numberOfSections-1 {
-            let insets = sectionInset(for: section)
-            y += referenceSizeForHeader(in: section).height
-            y += insets.top
-
-            for row in 0...numberOfLine(in: section)-1 {
-                y += sizeForItem(at: IndexPath(row: row, section: section)).height
-                y += minimumLineSpacing(for: section)
-            }
-
-            y += insets.bottom
-            y += referenceSizeForFooter(in: section).height
-            sectionMaxYs.append(y)
+            let previousY = sectionMaxYs.last ?? 0
+            sectionMaxYs.append(sectionMaxY(section: section, previousY: previousY))
         }
     }
 
-    override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
-        guard let superLayoutAttributes = super.layoutAttributesForElements(in: fixBugRect(rect)) else { return nil }
+    open override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
+        guard let superLayoutAttributes = super.layoutAttributesForElements(in: workaroundCellFlickering(rect)) else { return nil }
 
         var supplementaryAndCellAtrributes = updatedSupplementaryAndCellAtrributes(from: superLayoutAttributes)
 
@@ -63,22 +59,22 @@ class SectionSpacingFlowLayout: UICollectionViewFlowLayout {
         return supplementaryAndCellAtrributes
     }
 
-    override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+    open override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
         guard let layoutAttribute = super.layoutAttributesForItem(at: indexPath) else { return nil }
         return updatedSupplementaryAndCellAtrributes(from: [layoutAttribute]).first
     }
 
-    override var collectionViewContentSize: CGSize {
+    open override var collectionViewContentSize: CGSize {
         guard
             let collectionView = collectionView,
             let lastSectionMaxY = sectionMaxYs.last else {
                 return .zero
         }
         return CGSize(width: collectionView.frame.size.width,
-                      height: lastSectionMaxY + CGFloat(collectionView.numberOfSections + 1) * spacingHeight)
+                      height: lastSectionMaxY + bottomExtraSpace)
     }
 
-    override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
+    open override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
         return true
     }
 }
@@ -86,7 +82,32 @@ class SectionSpacingFlowLayout: UICollectionViewFlowLayout {
 // MARK: Private
 
 extension SectionSpacingFlowLayout {
-    fileprivate func fixBugRect(_ originalRect: CGRect) ->  CGRect {
+
+    fileprivate func sectionMaxY(section: Int, previousY: CGFloat) -> CGFloat {
+        var y = previousY
+
+        let insets = sectionInset(for: section)
+        let sectionMinimumLineSpacing = minimumLineSpacing(for: section)
+        y += referenceSizeForHeader(in: section).height
+        y += insets.top
+
+        for row in 0...max(numberOfLines(in: section)-1, 0) {
+            y += sizeForItem(at: IndexPath(row: row, section: section)).height
+            y += sectionMinimumLineSpacing
+        }
+
+        y += insets.bottom
+        y += referenceSizeForFooter(in: section).height
+        return y
+    }
+
+    fileprivate var bottomExtraSpace: CGFloat {
+        guard let collectionView = collectionView else { return collectionViewBottomInset }
+        return CGFloat(collectionView.numberOfSections) * spacingHeight + collectionViewBottomInset
+    }
+
+    fileprivate func workaroundCellFlickering(_ originalRect: CGRect) -> CGRect {
+        // See: http://stackoverflow.com/a/33824851
         guard let collectionView = collectionView else { return originalRect }
         return originalRect.insetBy(dx: 0, dy: -collectionView.bounds.size.height)
     }
@@ -105,7 +126,7 @@ extension SectionSpacingFlowLayout {
         return result
     }
 
-    fileprivate func numberOfLine(in section: Int) -> Int {
+    fileprivate func numberOfLines(in section: Int) -> Int {
         let itemsCount = CGFloat(collectionView!.numberOfItems(inSection: section))
         let width: CGFloat = availableWidth(in: section)
         let itemWidth = sizeForItem(at: IndexPath(row: 0, section: section)).width
@@ -116,7 +137,7 @@ extension SectionSpacingFlowLayout {
     }
 
     fileprivate func orderedSectionIndexes(from layoutAttributes: [UICollectionViewLayoutAttributes]) -> [Int] {
-        let indexes = layoutAttributes.map { return $0.indexPath.section }
+        let indexes = layoutAttributes.map { $0.indexPath.section }
         return Set(indexes).sorted()
     }
 

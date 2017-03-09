@@ -10,7 +10,7 @@ class ViewController: UIViewController, UICollectionViewDataSource {
         super.viewDidLoad()
         collectionView.delegate = self
         collectionView.dataSource = self
-
+        spacingFlowLayout.decorationViewKind = "Spacing"
         let cellNib = UINib(nibName: "Cell", bundle: nil)
         let headerNib = UINib(nibName: "Header", bundle: nil)
         let footerNib = UINib(nibName: "Footer", bundle: nil)
