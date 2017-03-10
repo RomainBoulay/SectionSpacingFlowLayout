@@ -8,7 +8,7 @@ open class SectionSpacingFlowLayout: UICollectionViewFlowLayout {
         didSet { invalidateLayout() }
     }
 
-    public var spacingHeight: CGFloat = 50 {
+    public var spacingHeight: CGFloat = 12 {
         didSet { invalidateLayout() }
     }
 
@@ -36,20 +36,22 @@ open class SectionSpacingFlowLayout: UICollectionViewFlowLayout {
 
             if
                 itemsCount > 0,
-                let layoutAttributesForFirstItem = super.layoutAttributesForItem(at: IndexPath(row: 0, section: section)),
+                let firstLayoutAttribute = super.layoutAttributesForItem(at: IndexPath(row: 0, section: section)),
                 let lastIndexPath = lastIndexPath(in: section, collectionView: collectionView),
-                let layoutAttributesForLastItem = super.layoutAttributesForItem(at: lastIndexPath) {
+                let lastLayoutAttribute = super.layoutAttributesForItem(at: lastIndexPath) {
 
-                let sectionPosition = buildSectionPosition(firstLayoutAttribute: layoutAttributesForFirstItem,
-                                                           lastLayoutAttribute: layoutAttributesForLastItem,
-                                                           section: section,
-                                                           itemsCount: itemsCount,
-                                                           previousAggregatedVerticalOffset: previousAggregatedVerticalOffset)
+                let sectionPosition = SectionAttribute(
+                    minY: firstLayoutAttribute.frame.minY - sectionTopHeight(section: section),
+                    maxY: lastLayoutAttribute.frame.maxY + sectionBottomHeight(section: section),
+                    itemsCount: itemsCount,
+                    spacingHeight: spacingHeight,
+                    previousAggregatedVerticalOffset: previousAggregatedVerticalOffset
+                )
                 sectionPositions.append(sectionPosition)
             } else {
                 let sectionPosition = SectionAttribute.empty(previousAggregatedVerticalOffset: previousAggregatedVerticalOffset,
-                                                             headerHeight: sectionTopY(section: section),
-                                                             footerHeigth: sectionBottomY(section: section))
+                                                             sectionTopHeight: sectionTopHeight(section: section),
+                                                             sectionBottomHeight: sectionBottomHeight(section: section))
                 sectionPositions.append(sectionPosition)
             }
         }
@@ -95,38 +97,20 @@ open class SectionSpacingFlowLayout: UICollectionViewFlowLayout {
 
 extension SectionSpacingFlowLayout {
 
-    fileprivate func buildSectionPosition(firstLayoutAttribute: UICollectionViewLayoutAttributes,
-                                          lastLayoutAttribute: UICollectionViewLayoutAttributes,
-                                          section: Int,
-                                          itemsCount: Int,
-                                          previousAggregatedVerticalOffset: CGFloat) -> SectionAttribute {
-        let minY = firstLayoutAttribute.frame.minY - sectionTopY(section: section)
-        let maxY = lastLayoutAttribute.frame.maxY + sectionBottomY(section: section)
-        return SectionAttribute(
-            minY: minY,
-            maxY: maxY,
-            itemsCount: itemsCount,
-            spacingHeight: spacingHeight,
-            previousAggregatedVerticalOffset: previousAggregatedVerticalOffset
-        )
-    }
-
     fileprivate func lastIndexPath(in section: Int, collectionView: UICollectionView) -> IndexPath? {
         let numberOfItems = collectionView.numberOfItems(inSection: section)
         return numberOfItems > 0 ? IndexPath(row: numberOfItems - 1, section: section) : nil
     }
 
-    fileprivate func sectionBottomY(section: Int) -> CGFloat {
-        var y: CGFloat = 0
-        y += minimumLineSpacing(for: section)
+    fileprivate func sectionBottomHeight(section: Int) -> CGFloat {
+        var y = minimumLineSpacing(for: section)
         y += sectionInset(for: section).bottom
         y += referenceSizeForFooter(in: section).height
         return y
     }
 
-    fileprivate func sectionTopY(section: Int) -> CGFloat {
-        var y: CGFloat = 0
-        y += referenceSizeForHeader(in: section).height
+    fileprivate func sectionTopHeight(section: Int) -> CGFloat {
+        var y = referenceSizeForHeader(in: section).height
         y += sectionInset(for: section).top
         return y
     }
@@ -199,7 +183,7 @@ extension SectionSpacingFlowLayout {
     fileprivate func lastDecorationLayoutAttribute() -> UICollectionViewLayoutAttributes? {
         guard let sectionPosition = sectionPositions.last else { return nil }
 
-        let attr = UICollectionViewLayoutAttributes(forDecorationViewOfKind: decorationViewKind, with: IndexPath(row: 1, section: sectionPositions.count-1))
+        let attr = UICollectionViewLayoutAttributes(forDecorationViewOfKind: decorationViewKind, with: IndexPath(row: 1, section: sectionPositions.endIndex-1))
         let sectionMinY = sectionPosition.newMaxY
         attr.frame = CGRect(x: 0, y: sectionMinY, width: collectionView!.frame.size.width, height: spacingHeight)
         return attr
