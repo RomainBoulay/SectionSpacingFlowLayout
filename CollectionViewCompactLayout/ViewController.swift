@@ -4,8 +4,8 @@ class ViewController: UIViewController, UICollectionViewDataSource {
 
     @IBOutlet weak var collectionView: UICollectionView!
 
-//    let data = [["1.1", "1.2", "1.3"], ["2.1","2.2", "2.3", "2.4"], [], ["3.1","3.2"], ["4.1"]]
-    let data = [["1.1", "1.2", "1.3"], ["2.1","2.2", "2.3", "2.4"], ["3.1","3.2"], ["4.1"]]
+    let data = [["1.1", "1.2", "1.3"], ["2.1","2.2", "2.3", "2.4"], [], ["3.1","3.2"], ["4.1"]]
+//    let data = [["1.1", "1.2", "1.3"], ["2.1","2.2", "2.3", "2.4"], ["3.1","3.2"], ["4.1"]]
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -112,7 +112,7 @@ extension ViewController: UICollectionViewDelegateFlowLayout {
         switch section {
         case 0: return .zero
         case 1: return UIEdgeInsets(top: 25, left: 5, bottom: 25, right: 5)
-        case 2: return .zero
+        case 2: return UIEdgeInsets(top: 10, left: 5, bottom: 10, right: 5)
 
         default:
             return .zero

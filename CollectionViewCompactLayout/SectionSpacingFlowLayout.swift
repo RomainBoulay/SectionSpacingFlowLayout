@@ -47,7 +47,10 @@ open class SectionSpacingFlowLayout: UICollectionViewFlowLayout {
                                                            previousAggregatedVerticalOffset: previousAggregatedVerticalOffset)
                 sectionPositions.append(sectionPosition)
             } else {
-                sectionPositions.append(SectionAttribute.emptySectionPosition(previousAggregatedVerticalOffset: previousAggregatedVerticalOffset))
+                let sectionPosition = SectionAttribute.empty(previousAggregatedVerticalOffset: previousAggregatedVerticalOffset,
+                                                             headerHeight: sectionTopY(section: section),
+                                                             footerHeigth: sectionBottomY(section: section))
+                sectionPositions.append(sectionPosition)
             }
         }
     }
@@ -97,8 +100,8 @@ extension SectionSpacingFlowLayout {
                                           section: Int,
                                           itemsCount: Int,
                                           previousAggregatedVerticalOffset: CGFloat) -> SectionAttribute {
-        let minY = sectionTopY(section: section, firstItemMinY: firstLayoutAttribute.frame.minY)
-        let maxY = sectionBottomY(section: section, lastItemMaxY: lastLayoutAttribute.frame.maxY)
+        let minY = firstLayoutAttribute.frame.minY - sectionTopY(section: section)
+        let maxY = lastLayoutAttribute.frame.maxY + sectionBottomY(section: section)
         return SectionAttribute(
             minY: minY,
             maxY: maxY,
@@ -113,18 +116,18 @@ extension SectionSpacingFlowLayout {
         return numberOfItems > 0 ? IndexPath(row: numberOfItems - 1, section: section) : nil
     }
 
-    fileprivate func sectionBottomY(section: Int, lastItemMaxY: CGFloat) -> CGFloat {
-        var y = lastItemMaxY
+    fileprivate func sectionBottomY(section: Int) -> CGFloat {
+        var y: CGFloat = 0
         y += minimumLineSpacing(for: section)
         y += sectionInset(for: section).bottom
         y += referenceSizeForFooter(in: section).height
         return y
     }
 
-    fileprivate func sectionTopY(section: Int, firstItemMinY: CGFloat) -> CGFloat {
-        var y = firstItemMinY
-        y -= referenceSizeForHeader(in: section).height
-        y -= sectionInset(for: section).top
+    fileprivate func sectionTopY(section: Int) -> CGFloat {
+        var y: CGFloat = 0
+        y += referenceSizeForHeader(in: section).height
+        y += sectionInset(for: section).top
         return y
     }
 

@@ -23,12 +23,15 @@ struct SectionAttribute {
         self.previousAggregatedVerticalOffset = previousAggregatedVerticalOffset
     }
 
-    static func emptySectionPosition(previousAggregatedVerticalOffset: CGFloat) -> SectionAttribute {
+    static func empty(previousAggregatedVerticalOffset: CGFloat,
+                      sectionTopHeight: CGFloat,
+                      sectionBottomHeight: CGFloat) -> SectionAttribute {
+        let verticalOffsetMinusHeaderFooter = previousAggregatedVerticalOffset - sectionTopHeight - sectionBottomHeight
         return SectionAttribute(minY: .nan,
-                               maxY: .nan,
-                               itemsCount: 0,
-                               spacingHeight: 0,
-                               previousAggregatedVerticalOffset: previousAggregatedVerticalOffset)
+                                maxY: .nan,
+                                itemsCount: 0,
+                                spacingHeight: 0,
+                                previousAggregatedVerticalOffset: verticalOffsetMinusHeaderFooter)
     }
 
     var hasItems: Bool { return itemsCount > 0 }
