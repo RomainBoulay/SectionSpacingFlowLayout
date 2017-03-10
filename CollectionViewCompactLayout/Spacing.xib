@@ -14,7 +14,19 @@
         <collectionReusableView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="Spacing" id="JZM-5e-jRC" customClass="Spacing">
             <rect key="frame" x="0.0" y="0.0" width="375" height="50"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+            <subviews>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Spacing" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pyX-bA-P3q">
+                    <rect key="frame" x="156.5" y="15" width="62" height="21"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                    <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <nil key="highlightedColor"/>
+                </label>
+            </subviews>
+            <color key="backgroundColor" red="0.0" green="0.0" blue="0.79128689240000005" alpha="1" colorSpace="calibratedRGB"/>
+            <constraints>
+                <constraint firstItem="pyX-bA-P3q" firstAttribute="centerX" secondItem="JZM-5e-jRC" secondAttribute="centerX" id="IO9-nu-uMp"/>
+                <constraint firstItem="pyX-bA-P3q" firstAttribute="centerY" secondItem="JZM-5e-jRC" secondAttribute="centerY" id="iNQ-kZ-v5a"/>
+            </constraints>
             <point key="canvasLocation" x="-359" y="-543"/>
         </collectionReusableView>
     </objects>
