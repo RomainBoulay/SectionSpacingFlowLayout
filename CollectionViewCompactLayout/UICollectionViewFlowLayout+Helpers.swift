@@ -60,6 +60,19 @@ extension UICollectionViewFlowLayout {
         }
         return size
     }
+    
+    func sectionBottomHeight(section: Int) -> CGFloat {
+        var y = minimumLineSpacing(for: section)
+        y += sectionInset(for: section).bottom
+        y += referenceSizeForFooter(in: section).height
+        return y
+    }
+
+    func sectionTopHeight(section: Int) -> CGFloat {
+        var y = referenceSizeForHeader(in: section).height
+        y += sectionInset(for: section).top
+        return y
+    }
 }
 
 extension UICollectionView {

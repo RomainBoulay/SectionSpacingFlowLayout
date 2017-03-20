@@ -21,6 +21,9 @@ class ViewController: UIViewController, UICollectionViewDataSource {
         collectionView.register(footerNib, forSupplementaryViewOfKind: UICollectionElementKindSectionFooter, withReuseIdentifier: "Footer")
         collectionView.collectionViewLayout.register(decorationNib, forDecorationViewOfKind: "Spacing")
         collectionView.collectionViewLayout.register(dividerNib, forDecorationViewOfKind: "SectionSpacingDividerView")
+
+//        spacingFlowLayout.dividerViewKind = nil
+//        spacingFlowLayout.dividerHeight = nil
     }
 
 

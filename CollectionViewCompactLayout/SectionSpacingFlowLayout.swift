@@ -24,11 +24,11 @@ open class SectionSpacingFlowLayout: UICollectionViewFlowLayout {
         didSet { invalidateLayout() }
     }
 
-    public var dividerViewKind: String = "SectionSpacingDividerView" {
+    public var dividerViewKind: String? = "SectionSpacingDividerView" {
         didSet { invalidateLayout() }
     }
 
-    public var dividerHeight: CGFloat = 1.0/UIScreen.main.scale {
+    public var dividerHeight: CGFloat? = 1.0/UIScreen.main.scale {
         didSet { invalidateLayout() }
     }
 
@@ -142,19 +142,6 @@ extension SectionSpacingFlowLayout {
         return numberOfItems > 0 ? IndexPath(row: numberOfItems - 1, section: section) : nil
     }
 
-    fileprivate func sectionBottomHeight(section: Int) -> CGFloat {
-        var y = minimumLineSpacing(for: section)
-        y += sectionInset(for: section).bottom
-        y += referenceSizeForFooter(in: section).height
-        return y
-    }
-
-    fileprivate func sectionTopHeight(section: Int) -> CGFloat {
-        var y = referenceSizeForHeader(in: section).height
-        y += sectionInset(for: section).top
-        return y
-    }
-
     fileprivate func workaroundCellFlickering(_ originalRect: CGRect) -> CGRect {
         // See: http://stackoverflow.com/a/33824851
         guard let collectionView = collectionView else { return originalRect }
@@ -217,7 +204,8 @@ extension SectionSpacingFlowLayout {
         guard sectionPosition.hasItems else { return nil }
 
         return buildDividerViewAttribute(indexPath: IndexPath(row: dividerViewPosition.rawValue, section: section),
-                                         y: dividerViewPosition.yPosition(in: sectionPosition, dividerHeight: dividerHeight))
+                                         sectionPosition: sectionPosition,
+                                         dividerViewPosition: dividerViewPosition)
     }
 
     fileprivate func lastSpacingViewAttribute() -> UICollectionViewLayoutAttributes? {
@@ -233,8 +221,10 @@ extension SectionSpacingFlowLayout {
         return attr
     }
 
-    fileprivate func buildDividerViewAttribute(indexPath: IndexPath, y: CGFloat) -> UICollectionViewLayoutAttributes? {
+    fileprivate func buildDividerViewAttribute(indexPath: IndexPath, sectionPosition: SectionAttribute, dividerViewPosition: DividerViewPositionInSection) -> UICollectionViewLayoutAttributes? {
+        guard let dividerViewKind = dividerViewKind, let dividerHeight = dividerHeight else { return nil }
         let attr = UICollectionViewLayoutAttributes(forDecorationViewOfKind: dividerViewKind, with: indexPath)
+        let y = dividerViewPosition.yPosition(in: sectionPosition, dividerHeight: dividerHeight)
         attr.frame = CGRect(x: 0, y: y, width: collectionView!.frame.size.width, height: dividerHeight)
         return attr
     }
