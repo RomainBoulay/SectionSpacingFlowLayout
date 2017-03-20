@@ -226,10 +226,6 @@ extension SectionSpacingFlowLayout {
         return buildSpacingViewAttribute(indexPath: IndexPath(row: 1, section: sectionPositions.endIndex-1),
                                          y: sectionPosition.newMaxY)
     }
-}
-
-// UICollectionViewLayoutAttributes builders
-fileprivate extension SectionSpacingFlowLayout {
 
     fileprivate func buildSpacingViewAttribute(indexPath: IndexPath, y: CGFloat) -> UICollectionViewLayoutAttributes? {
         let attr = UICollectionViewLayoutAttributes(forDecorationViewOfKind: spacingViewKind, with: indexPath)
