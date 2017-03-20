@@ -61,3 +61,11 @@ extension UICollectionViewFlowLayout {
         return size
     }
 }
+
+extension UICollectionView {
+    func availableWidth(in section: Int) -> CGFloat {
+        guard let flowLayout = collectionViewLayout as? UICollectionViewFlowLayout else { return 0 }
+        let inset = flowLayout.sectionInset(for: section)
+        return frame.size.width - contentInset.left - contentInset.right - inset.left - inset.right
+    }
+}

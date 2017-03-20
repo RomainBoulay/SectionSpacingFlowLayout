@@ -21,6 +21,7 @@
 		940B35D91E6986EF004786C5 /* Spacing.xib in Resources */ = {isa = PBXBuildFile; fileRef = 940B35D81E6986EF004786C5 /* Spacing.xib */; };
 		940F41B61E6F2C6F0098725D /* UICollectionViewFlowLayout+Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940F41B51E6F2C6F0098725D /* UICollectionViewFlowLayout+Helpers.swift */; };
 		94D61F2D1E71A48200C69AAE /* SectionPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D61F2C1E71A48200C69AAE /* SectionPosition.swift */; };
+		94EE0B041E7FFF6B0044059C /* Divider.xib in Resources */ = {isa = PBXBuildFile; fileRef = 94EE0B031E7FFF6B0044059C /* Divider.xib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +41,7 @@
 		940B35D81E6986EF004786C5 /* Spacing.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = Spacing.xib; sourceTree = "<group>"; };
 		940F41B51E6F2C6F0098725D /* UICollectionViewFlowLayout+Helpers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UICollectionViewFlowLayout+Helpers.swift"; sourceTree = "<group>"; };
 		94D61F2C1E71A48200C69AAE /* SectionPosition.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SectionPosition.swift; sourceTree = "<group>"; };
+		94EE0B031E7FFF6B0044059C /* Divider.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = Divider.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,6 +85,7 @@
 				940B35D31E698231004786C5 /* Footer.xib */,
 				68A29C2D1E6855F300E76CD3 /* Header.xib */,
 				68A29C291E68550400E76CD3 /* Cell.xib */,
+				94EE0B031E7FFF6B0044059C /* Divider.xib */,
 				68A29C1A1E6851B100E76CD3 /* Main.storyboard */,
 				68A29C1D1E6851B100E76CD3 /* Assets.xcassets */,
 				68A29C1F1E6851B100E76CD3 /* LaunchScreen.storyboard */,
@@ -128,7 +131,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 68A29C0E1E6851B100E76CD3 /* Build configuration list for PBXProject "CollectionViewCompactLayout" */;
+			buildConfigurationList = 68A29C0E1E6851B100E76CD3 /* Build configuration list for PBXProject "SectionSpacingFlowLayout" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -154,6 +157,7 @@
 				940B35D71E698610004786C5 /* Footer.xib in Resources */,
 				68A29C211E6851B100E76CD3 /* LaunchScreen.storyboard in Resources */,
 				940B35D91E6986EF004786C5 /* Spacing.xib in Resources */,
+				94EE0B041E7FFF6B0044059C /* Divider.xib in Resources */,
 				68A29C2F1E6855F300E76CD3 /* Header.xib in Resources */,
 				68A29C2B1E68550400E76CD3 /* Cell.xib in Resources */,
 				68A29C1E1E6851B100E76CD3 /* Assets.xcassets in Resources */,
@@ -322,7 +326,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		68A29C0E1E6851B100E76CD3 /* Build configuration list for PBXProject "CollectionViewCompactLayout" */ = {
+		68A29C0E1E6851B100E76CD3 /* Build configuration list for PBXProject "SectionSpacingFlowLayout" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				68A29C231E6851B100E76CD3 /* Debug */,

@@ -4,22 +4,23 @@ class ViewController: UIViewController, UICollectionViewDataSource {
 
     @IBOutlet weak var collectionView: UICollectionView!
 
-    let data = [["1.1", "1.2", "1.3"], ["2.1","2.2", "2.3", "2.4"], [], ["3.1","3.2"], ["4.1"]]
-//    let data = [["1.1", "1.2", "1.3"], ["2.1","2.2", "2.3", "2.4"], ["3.1","3.2"], ["4.1"]]
+    let data = [["1.1", "1.2", "1.3"], ["2.1","2.2", "2.3", "2.4"], [], ["4.1","4.2"], ["5.1"]]
 
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionView.delegate = self
         collectionView.dataSource = self
-        spacingFlowLayout.decorationViewKind = "Spacing"
+        spacingFlowLayout.spacingViewKind = "Spacing"
         let cellNib = UINib(nibName: "Cell", bundle: nil)
         let headerNib = UINib(nibName: "Header", bundle: nil)
         let footerNib = UINib(nibName: "Footer", bundle: nil)
         let decorationNib = UINib(nibName: "Spacing", bundle: nil)
+        let dividerNib = UINib(nibName: "Divider", bundle: nil)
         collectionView.register(cellNib, forCellWithReuseIdentifier: "Cell")
         collectionView.register(headerNib, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: "Header")
         collectionView.register(footerNib, forSupplementaryViewOfKind: UICollectionElementKindSectionFooter, withReuseIdentifier: "Footer")
         collectionView.collectionViewLayout.register(decorationNib, forDecorationViewOfKind: "Spacing")
+        collectionView.collectionViewLayout.register(dividerNib, forDecorationViewOfKind: "SectionSpacingDividerView")
     }
 
 
@@ -105,7 +106,7 @@ class ViewController: UIViewController, UICollectionViewDataSource {
 
 extension ViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: collectionView.frame.width/2.0 - 5, height: 50)
+        return CGSize(width: collectionView.frame.width/3.0, height: 50)
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {

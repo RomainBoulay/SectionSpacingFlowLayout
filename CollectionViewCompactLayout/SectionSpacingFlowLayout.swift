@@ -1,10 +1,22 @@
 import Foundation
 import UIKit
 
+fileprivate enum DividerViewPositionInSection: Int {
+    case top = 0
+    case bottom = 1
+
+    func yPosition(in sectionAttribute: SectionAttribute, dividerHeight: CGFloat) -> CGFloat {
+        switch self {
+        case .top: return sectionAttribute.newMinY - dividerHeight
+        case .bottom: return sectionAttribute.newMaxY - dividerHeight
+        }
+    }
+}
+
 open class SectionSpacingFlowLayout: UICollectionViewFlowLayout {
     fileprivate var sectionPositions = [SectionAttribute]()
 
-    public var decorationViewKind: String = "SectionSpacingFlowLayout" {
+    public var spacingViewKind: String = "SectionSpacingDecorationView" {
         didSet { invalidateLayout() }
     }
 
@@ -12,12 +24,20 @@ open class SectionSpacingFlowLayout: UICollectionViewFlowLayout {
         didSet { invalidateLayout() }
     }
 
-    public func register(viewClass: AnyClass?) {
-        register(viewClass, forDecorationViewOfKind: decorationViewKind)
+    public var dividerViewKind: String = "SectionSpacingDividerView" {
+        didSet { invalidateLayout() }
     }
 
-    public func register(nib: UINib?) {
-        register(nib, forDecorationViewOfKind: decorationViewKind)
+    public var dividerHeight: CGFloat = 1.0/UIScreen.main.scale {
+        didSet { invalidateLayout() }
+    }
+
+    public func registerSpacingView(viewClass: AnyClass?) {
+        register(viewClass, forDecorationViewOfKind: spacingViewKind)
+    }
+
+    public func registerSpacingView(nib: UINib?) {
+        register(nib, forDecorationViewOfKind: spacingViewKind)
     }
 
     // MARK: UICollectionViewFlowLayout
@@ -41,8 +61,8 @@ open class SectionSpacingFlowLayout: UICollectionViewFlowLayout {
                 let lastLayoutAttribute = super.layoutAttributesForItem(at: lastIndexPath) {
 
                 let sectionPosition = SectionAttribute(
-                    minY: firstLayoutAttribute.frame.minY - sectionTopHeight(section: section),
-                    maxY: lastLayoutAttribute.frame.maxY + sectionBottomHeight(section: section),
+                    initialMinY: firstLayoutAttribute.frame.minY - sectionTopHeight(section: section),
+                    initialMaxY: lastLayoutAttribute.frame.maxY + sectionBottomHeight(section: section),
                     itemsCount: itemsCount,
                     spacingHeight: spacingHeight,
                     previousAggregatedVerticalOffset: previousAggregatedVerticalOffset
@@ -64,8 +84,16 @@ open class SectionSpacingFlowLayout: UICollectionViewFlowLayout {
         let sectionIndexes = orderedSectionIndexes(from: returnedLayoutAttributes)
 
         for section in sectionIndexes {
-            if let decorationViewLayoutAttribute = decorationLayoutAttribute(section: section) {
+            if let topDividerAttribute = dividerViewAttribute(section: section, dividerViewPosition: .top) {
+                returnedLayoutAttributes.append(topDividerAttribute)
+            }
+
+            if let decorationViewLayoutAttribute = spacingViewAttribute(section: section) {
                 returnedLayoutAttributes.append(decorationViewLayoutAttribute)
+            }
+
+            if let bottomDividerAttribute = dividerViewAttribute(section: section, dividerViewPosition: .bottom) {
+                returnedLayoutAttributes.append(bottomDividerAttribute)
             }
         }
 
@@ -89,7 +117,19 @@ open class SectionSpacingFlowLayout: UICollectionViewFlowLayout {
     }
 
     open override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
-        return true
+        guard let collectionView = collectionView else { return true }
+        return !newBounds.size.equalTo(collectionView.bounds.size)
+    }
+
+    open override func invalidationContext(forBoundsChange newBounds: CGRect) -> UICollectionViewLayoutInvalidationContext {
+        let context = super.invalidationContext(forBoundsChange: newBounds)
+        guard let flowContext = context as? UICollectionViewFlowLayoutInvalidationContext else {
+            return context
+        }
+
+        flowContext.invalidateFlowLayoutDelegateMetrics = true
+        flowContext.invalidateFlowLayoutAttributes = true
+        return flowContext
     }
 }
 
@@ -134,7 +174,7 @@ extension SectionSpacingFlowLayout {
             result.append(supplementaryAndCellAtrribute)
         }
 
-        if let lastDecoration = lastDecorationLayoutAttribute() {
+        if let lastDecoration = lastSpacingViewAttribute() {
             result.append(lastDecoration)
         }
 
@@ -151,7 +191,7 @@ extension SectionSpacingFlowLayout {
 
     fileprivate func numberOfLines(in section: Int) -> Int {
         let itemsCount = CGFloat(sectionPositions[section].itemsCount)
-        let width = availableWidth(in: section)
+        let width = collectionView!.availableWidth(in: section)
         let itemWidth = sizeForItem(at: IndexPath(row: 0, section: section)).width
         let minInteritemSpacing = minimumInteritemSpacing(for: section)
         let itemsAcross = ((width + minInteritemSpacing) / (itemWidth + minInteritemSpacing))
@@ -164,28 +204,42 @@ extension SectionSpacingFlowLayout {
         return Set(indexes).sorted()
     }
 
-    fileprivate func availableWidth(in section: Int) -> CGFloat {
-        guard let cv = collectionView else { return 0 }
-        let inset = sectionInset(for: section)
-        return cv.frame.size.width - cv.contentInset.left - cv.contentInset.right - inset.left - inset.right
-    }
-
-    fileprivate func decorationLayoutAttribute(section: Int, row: Int = 0) -> UICollectionViewLayoutAttributes? {
+    fileprivate func spacingViewAttribute(section: Int, row: Int = 0) -> UICollectionViewLayoutAttributes? {
         let sectionPosition = sectionPositions[section]
         guard sectionPosition.hasItems else { return nil }
 
-        let attr = UICollectionViewLayoutAttributes(forDecorationViewOfKind: decorationViewKind, with: IndexPath(row: row, section: section))
-        let sectionMinY = sectionPosition.decorationViewMinY
-        attr.frame = CGRect(x: 0, y: sectionMinY, width: collectionView!.frame.size.width, height: spacingHeight)
+        return buildSpacingViewAttribute(indexPath: IndexPath(row: row, section: section),
+                                         y: sectionPosition.decorationViewMinY)
+    }
+
+    fileprivate func dividerViewAttribute(section: Int, dividerViewPosition: DividerViewPositionInSection) -> UICollectionViewLayoutAttributes? {
+        let sectionPosition = sectionPositions[section]
+        guard sectionPosition.hasItems else { return nil }
+
+        return buildDividerViewAttribute(indexPath: IndexPath(row: dividerViewPosition.rawValue, section: section),
+                                         y: dividerViewPosition.yPosition(in: sectionPosition, dividerHeight: dividerHeight))
+    }
+
+    fileprivate func lastSpacingViewAttribute() -> UICollectionViewLayoutAttributes? {
+        guard let sectionPosition = sectionPositions.last else { return nil }
+
+        return buildSpacingViewAttribute(indexPath: IndexPath(row: 1, section: sectionPositions.endIndex-1),
+                                         y: sectionPosition.newMaxY)
+    }
+}
+
+// UICollectionViewLayoutAttributes builders
+fileprivate extension SectionSpacingFlowLayout {
+
+    fileprivate func buildSpacingViewAttribute(indexPath: IndexPath, y: CGFloat) -> UICollectionViewLayoutAttributes? {
+        let attr = UICollectionViewLayoutAttributes(forDecorationViewOfKind: spacingViewKind, with: indexPath)
+        attr.frame = CGRect(x: 0, y: y, width: collectionView!.frame.size.width, height: spacingHeight)
         return attr
     }
 
-    fileprivate func lastDecorationLayoutAttribute() -> UICollectionViewLayoutAttributes? {
-        guard let sectionPosition = sectionPositions.last else { return nil }
-
-        let attr = UICollectionViewLayoutAttributes(forDecorationViewOfKind: decorationViewKind, with: IndexPath(row: 1, section: sectionPositions.endIndex-1))
-        let sectionMinY = sectionPosition.newMaxY
-        attr.frame = CGRect(x: 0, y: sectionMinY, width: collectionView!.frame.size.width, height: spacingHeight)
+    fileprivate func buildDividerViewAttribute(indexPath: IndexPath, y: CGFloat) -> UICollectionViewLayoutAttributes? {
+        let attr = UICollectionViewLayoutAttributes(forDecorationViewOfKind: dividerViewKind, with: indexPath)
+        attr.frame = CGRect(x: 0, y: y, width: collectionView!.frame.size.width, height: dividerHeight)
         return attr
     }
 }

@@ -24,3 +24,7 @@ class Spacing: UICollectionReusableView {
     }
     
 }
+
+class Divider: UICollectionReusableView {
+    
+}

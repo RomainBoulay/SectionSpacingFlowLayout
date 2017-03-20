@@ -10,14 +10,14 @@ struct SectionAttribute {
     private let spacingHeight: CGFloat
     private let previousAggregatedVerticalOffset: CGFloat
 
-    init(minY: CGFloat,
-         maxY: CGFloat,
+    init(initialMinY: CGFloat,
+         initialMaxY: CGFloat,
          itemsCount: Int,
          spacingHeight: CGFloat,
          previousAggregatedVerticalOffset: CGFloat
         ) {
-        self.initialMinY = minY
-        self.initialMaxY = maxY
+        self.initialMinY = initialMinY
+        self.initialMaxY = initialMaxY
         self.itemsCount = itemsCount
         self.spacingHeight = spacingHeight
         self.previousAggregatedVerticalOffset = previousAggregatedVerticalOffset
@@ -27,8 +27,8 @@ struct SectionAttribute {
                       sectionTopHeight: CGFloat,
                       sectionBottomHeight: CGFloat) -> SectionAttribute {
         let verticalOffsetMinusHeaderFooter = previousAggregatedVerticalOffset - sectionTopHeight - sectionBottomHeight
-        return SectionAttribute(minY: .nan,
-                                maxY: .nan,
+        return SectionAttribute(initialMinY: .nan,
+                                initialMaxY: .nan,
                                 itemsCount: 0,
                                 spacingHeight: 0,
                                 previousAggregatedVerticalOffset: verticalOffsetMinusHeaderFooter)
