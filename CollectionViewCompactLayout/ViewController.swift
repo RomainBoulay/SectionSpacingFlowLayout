@@ -4,7 +4,7 @@ class ViewController: UIViewController, UICollectionViewDataSource {
 
     @IBOutlet weak var collectionView: UICollectionView!
 
-    let data = [["1.1", "1.2", "1.3"], ["2.1","2.2", "2.3", "2.4"], [], ["4.1","4.2"], ["5.1"]]
+    let data = [["1.1", "1.2", "1.3"], ["2.1","2.2", "2.3", "2.4"], [], ["4.1","4.2"], ["5.1"], ["6.1"]]
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -136,7 +136,7 @@ extension ViewController: UICollectionViewDelegateFlowLayout {
         case 0: return CGSize(width: collectionView.frame.width, height: 10)
         case 1: return CGSize(width: collectionView.frame.width, height: 20)
         case 2: return CGSize(width: collectionView.frame.width, height: 30)
-        case 3: return CGSize(width: collectionView.frame.width, height: 40)
+        case 3: return .zero
         default: return CGSize(width: collectionView.frame.width, height: 10)
         }
     }
@@ -147,6 +147,7 @@ extension ViewController: UICollectionViewDelegateFlowLayout {
         case 1: return CGSize(width: collectionView.frame.width, height: 20)
         case 2: return CGSize(width: collectionView.frame.width, height: 30)
         case 3: return CGSize(width: collectionView.frame.width, height: 40)
+        case 4: return .zero
         default: return CGSize(width: collectionView.frame.width, height: 10)
         }
     }
